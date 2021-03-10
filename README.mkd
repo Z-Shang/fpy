@@ -1,0 +1,6 @@
+# Functional Python
+
+Just a small collection of my tools
+
+## License
+GPL3+
