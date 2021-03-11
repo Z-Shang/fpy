@@ -57,7 +57,7 @@ Given Monad `m`:
 
 #### Functions:
 * `cont :: (A -> B) -> Cont[A, B]`
-* `Cont.run :: Cout[B, C] -> C`
+* `runCont :: Cout[B, C] -> C`
 
 #### Functions:
 Given functor `f`:

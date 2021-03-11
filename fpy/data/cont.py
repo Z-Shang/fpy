@@ -21,7 +21,7 @@ class Cont(_Monad[R], Generic[T, R]):
         self.f = func(f)
 
     def __bind__(self, f):
-        return self.__class__.ret(lambda k: self.f(lambda *a: f(*a).run(k)))
+        return self.__class__.ret(lambda k: self.f(lambda *a: f(*a).__run__(k)))
 
     def __ntrans__(self, t):
         return self.f(t)
@@ -35,12 +35,12 @@ class Cont(_Monad[R], Generic[T, R]):
         except SignatureMismatchError as e:
             raise e.e
 
-    def run(self, k: Cont[[R], S]):
+    def __run__(self, k: Cont[[R], S]):
         return self.f(k)
 
 
 def runCont(c, k):
-    return c.run(k)
+    return c.__run__(k)
 
 
 def cont(f: Callable[[T], R]) -> Cont[T, R]:
