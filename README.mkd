@@ -6,7 +6,7 @@ Just a small collection of my tools
 ### Functor `fpy.control.functor`
 Given Functors `f`, `g`:
 * `__fmap__ :: f a -> (a -> b) -> f b`
-* `__ntrans__ :: f a -> (a ~> g b) -> g b`
+* `__ntrans__ :: f a -> (f a ~> g b) -> g b`
 
 #### Operators:
 * `|` = `__fmap__`
@@ -14,7 +14,7 @@ Given Functors `f`, `g`:
 
 ### NTrans (Natrual Transform) `fpy.control.natural_transform`
 Given Functors `f`, `g`:
-* `__trans__ :: f a -> g b`
+* `__trans__ :: f a ~> g b`
 
 ### Applicative : Functor `fpy.control.applicative`
 No new trait comparing to functor, `liftA2` is defined using `fmap`
