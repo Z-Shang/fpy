@@ -3,7 +3,16 @@ from fpy.data.forgetful import forget
 from fpy.data.function import const, flip
 from fpy.utils.placeholder import __
 from fpy.composable.function import func
-from fpy.composable.collections import apply, transN, trans0, trans1, or_, and_, set0
+from fpy.composable.collections import (
+    apply,
+    transN,
+    trans0,
+    trans1,
+    or_,
+    and_,
+    set0,
+    set1,
+)
 
 import string
 from typing import TypeVar, List, Tuple, Callable, Generic
@@ -151,7 +160,7 @@ def ptrans(p, trans):
 def peek(p):
     @parser
     def res(s):
-        return p(s) >> const(([], s))
+        return p(s) >> set1(s)
 
     return res
 
@@ -163,4 +172,7 @@ skip = flip(ptrans, discard)
 def pseq(s):
     if not s:
         return just_nothing
-    return one(__ == s[0]) + pseq(s[1:])
+    p = just_nothing
+    for e in s:
+        p = p + one(__ == e)
+    return p

@@ -10,6 +10,7 @@ from fpy.parsec.parsec import (
     skip,
     pseq,
 )
+from fpy.data.either import fromRight
 
 import unittest
 
@@ -46,3 +47,38 @@ class TestParsec(unittest.TestCase):
 
         self.assertTrue(pl(toks))
         self.assertTrue(pr(toks))
+
+    def testParseChoice(self):
+        p1 = one(odd)
+        p2 = one(even)
+        p = p1 | p2
+        self.assertTrue((p + p)(toks))
+
+    def testMany(self):
+        p1 = one(odd)
+        p2 = one(even)
+        p = many1(p1)
+        self.assertTrue(p(toks))
+        p = many(p2)
+        self.assertTrue(p(toks))
+
+    def testSkip(self):
+        p1 = one(odd)
+        p2 = one(even)
+        p = skip(p1) + p2
+        self.assertTrue(p(toks))
+
+    def testPSeq(self):
+        seq = [1, 2, 3]
+        p = pseq(seq)
+        self.assertTrue(p(toks))
+        self.assertFalse(pseq([2, 3, 4])(toks))
+
+    def testPeek(self):
+        p1 = one(odd)
+        p = peek(p1)
+        res = p(toks)
+        self.assertTrue(res)
+        head, rest = fromRight(None, res)
+        self.assertEqual(head, [1])
+        self.assertIs(toks, rest)
