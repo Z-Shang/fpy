@@ -2,5 +2,42 @@
 
 Just a small collection of my tools
 
+## Control:
+### Functor
+Given Functors `f`, `g`:
+* `__fmap__ :: f a -> (a -> b) -> f b`
+* `__ntrans__ :: f a -> (a ~> g b) -> g b`
+
+### NTrans (Natrual Transform)
+Given Functors `f`, `g`:
+* `__trans__ :: f a -> g b`
+
+### Applicative : Functor
+No new trait comparing to functor, `liftA2` is defined using `fmap`
+
+### Monad : Applicative
+Given Monad `m`:
+* `__bind__ :: m a -> (a -> m b) -> m b`
+
+## Data
+### Maybe : Monad
+#### Types:
+* `Maybe[T]`
+* `Just[T] : Maybe[T]`
+* `Nothing[T] : Maybe[T]`
+#### Functions:
+* `isJust :: Maybe[T] -> bool`
+* `isNothing :: Maybe[T] -> bool`
+* `fromJust :: Maybe[T] -> T`
+* `fromMaybe :: T -> Maybe[T] -> T`
+* `maybe :: S -> (T -> S) -> Maybe[T] -> S`
+* `mapMaybe :: (T -> Maybe[S]) -> List[T] -> List[S]`
+
+### Either : Monad
+#### Types:
+* `Either[T]`
+* `Left[T] : Either[T]`
+* `Right[T] : Either[T]`
+
 ## License
 GPL3+
