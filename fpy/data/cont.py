@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fpy.control.monad import _Monad
 from fpy.composable.function import func, SignatureMismatchError
+
 import bytecode as bc
 
 from dataclasses import dataclass
@@ -43,11 +44,12 @@ def runCont(c, k):
     return c.__run__(k)
 
 
+def to_cont(v):
+    return Cont(lambda k: k(v))
+
+
 def cont(f: Callable[[T], R]) -> Cont[T, R]:
     raw_bc = bc.Bytecode.from_code(f.__code__)
-
-    def _to_cont(v):
-        return Cont(lambda k: k(v))
 
     print(raw_bc)
     res_bc = []
@@ -59,7 +61,7 @@ def cont(f: Callable[[T], R]) -> Cont[T, R]:
             res_bc.append(inst)
             continue
 
-        res_bc.append(bc.Instr("LOAD_CONST", _to_cont, lineno=inst.lineno))
+        res_bc.append(bc.Instr("LOAD_CONST", to_cont, lineno=inst.lineno))
         res_bc.append(bc.Instr("ROT_TWO", lineno=inst.lineno))
         res_bc.append(bc.Instr("CALL_FUNCTION", 1, lineno=inst.lineno))
         res_bc.append(inst)
