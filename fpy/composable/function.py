@@ -2,6 +2,9 @@ import inspect
 import collections.abc as cabc
 
 from fpy.composable.composable import Composable
+from fpy.composable.transparent import Transparent
+
+from typing import Callable
 
 
 class SignatureMismatchError(Exception):
@@ -15,31 +18,35 @@ class NotEnoughArgsError(Exception):
         self.got = got
 
 
-class func(Composable):
+class func(Composable, Transparent):
+    fn: Callable = None
+
     def __init__(self, f, *args, **kwargs):
         if isinstance(f, func):
-            self.f = f.f
+            self.fn = f.fn
             self.args = (*f.args, *args)
             self.kwargs = {**f.kwargs, **kwargs}
             self.sig = f.sig
-            print(self.args)
         elif isinstance(f, cabc.Callable):
-            self.f = f
+            self.fn = f
             self.args = args
             self.kwargs = kwargs
             self.sig = inspect.signature(f)
         else:
             raise TypeError(f"{f} is not callable")
 
+    def __underlying__(self):
+        return self.fn
+
     def __repr__(self):
-        return repr(self.f)
+        return repr(self.fn)
 
     def __call__(self, *args, **kwargs):
         _args = (*self.args, *args)
         _kwargs = {**self.kwargs, **kwargs}
         try:
             self.sig.bind(*_args, **_kwargs)
-            return self.f(*_args, **_kwargs)
+            return self.fn(*_args, **_kwargs)
         except TypeError:
             try:
                 self.sig.bind_partial(*_args, **_kwargs)

@@ -33,6 +33,7 @@ def main():
         "author_email": "z@gilgamesh.me",
         "classifiers": CLASSIFIERS,
         "packages": ["fpy", "fpy.tests"],
+        "install_requires": ["bytecode"],
     }
     setup(**options)
 

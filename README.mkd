@@ -49,7 +49,15 @@ Given Monad `m`:
 ### Forgetful : Monad (Forgetful Functor) `fpy.data.forgetful`
 #### Types:
 * `Under[T]`
-`Under` is the dummy box for any type, used for the forgetful functor to extract data and drop monadic structures from other monad.
+`Under` similar to Haskell's `Identity` monad
+
+### Cont : Monad `fpy.data.cont`
+#### Types:
+* `Cont[T, R]`
+
+#### Functions:
+* `cont :: (A -> B) -> Cont[A, B]`
+* `Cont.run :: Cout[B, C] -> C`
 
 #### Functions:
 Given functor `f`:
@@ -68,6 +76,10 @@ Given functor `f`:
 * `__compose__`
 #### Operators:
 * `^` = `__compose__`
+
+### Transparent `fpy.composable.transparent`
+* `__underlying__`
+Delegate an attribute access to an underlying object
 
 ### Function `fpy.composable.function`
 #### Types:

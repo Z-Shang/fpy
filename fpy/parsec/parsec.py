@@ -2,6 +2,7 @@ from fpy.data.either import Either, Left, Right
 from fpy.data.forgetful import forget
 from fpy.data.function import const, flip
 from fpy.utils.placeholder import __
+from fpy.composable.transparent import Transparent
 from fpy.composable.function import func
 from fpy.composable.collections import (
     apply,
@@ -36,12 +37,15 @@ def c2s(cs: List[str]) -> str:
 
 
 @dataclass
-class parser(Generic[S, T]):
+class parser(Transparent, Generic[S, T]):
     """
     parser :: [S] -> Either [S] ([T] * [S])
     """
 
     fn: Callable[[List[S]], Either[List[S], Tuple[List[T], List[S]]]]
+
+    def __underlying__(self):
+        return self.fn
 
     def __call__(self, s: List[S]):
         if not isinstance(s, cabc.Sequence):

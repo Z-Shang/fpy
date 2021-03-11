@@ -1,9 +1,11 @@
 from abc import ABCMeta, abstractmethod
 
 from fpy.control.applicative import _Applicative
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Callable
+
 
 T = TypeVar("T")
+R = TypeVar("R")
 
 
 class _Monad(_Applicative[T], Generic[T]):
