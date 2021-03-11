@@ -31,7 +31,7 @@ class Left(Either[L, R]):
         return False
 
     def __fmap__(self, f: Callable[[L], T]) -> Left[T]:
-        return Left(f(self.v))
+        return self
 
     def __bind__(self, _) -> Left[L, R]:
         return self

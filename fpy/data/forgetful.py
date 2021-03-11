@@ -30,4 +30,4 @@ class Under(_Monad, Generic[T]):
         return self.__fmap__(b)
 
 
-forget: _NTrans[F, B, G, T] = NTrans(Under)
+forget: _NTrans[F, B, Under, T] = NTrans(Under)

@@ -58,19 +58,11 @@ class parser(Generic[S, T]):
         if n <= 0:
             return parser(const(None))
 
-        @parser
-        def res(s):
-            _res = []
-            for _ in range(n):
-                _part = self(s)
-                if not _part:
-                    break
-                part, s = (_part & forget).under()
-            if not _res:
-                return None
-            return _res, s
+        p = self
+        for n in range(n - 1):
+            p = p + self
 
-        return res
+        return p
 
     def __mul__(self, n):
         return self.timeN(n)
@@ -81,7 +73,7 @@ class parser(Generic[S, T]):
     def concat(self, nxt):
         @parser
         def res(s):
-            return self(s) >> apply(lambda a, rest: nxt(rest) >> trans0(a + __))
+            return self(s) >> apply(lambda a, rest: nxt(rest) | trans0(a + __))
 
         return res
 
@@ -98,9 +90,7 @@ class parser(Generic[S, T]):
         return parser(lambda s: self(s) >> apply(lambda _, rest: other(rest)))
 
     def parseL(self, other):
-        return parser(
-            lambda s: self(s) >> apply(lambda a, rest: other(rest) >> set0(a))
-        )
+        return parser(lambda s: self(s) >> apply(lambda a, rest: other(rest) | set0(a)))
 
     def __rshift__(self, other):
         return self.parseR(other)
@@ -154,13 +144,13 @@ many = lambda p: pmaybe(many1(p))
 
 
 def ptrans(p, trans):
-    return parser(lambda s: p(s) >> trans)
+    return parser(lambda s: p(s) | trans)
 
 
 def peek(p):
     @parser
     def res(s):
-        return p(s) >> set1(s)
+        return p(s) | set1(s)
 
     return res
 

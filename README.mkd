@@ -3,24 +3,31 @@
 Just a small collection of my tools
 
 ## Control:
-### Functor
+### Functor `fpy.control.functor`
 Given Functors `f`, `g`:
 * `__fmap__ :: f a -> (a -> b) -> f b`
 * `__ntrans__ :: f a -> (a ~> g b) -> g b`
 
-### NTrans (Natrual Transform)
+#### Operators:
+* `|` = `__fmap__`
+* `&` = `__ntrans__`
+
+### NTrans (Natrual Transform) `fpy.control.natural_transform`
 Given Functors `f`, `g`:
 * `__trans__ :: f a -> g b`
 
-### Applicative : Functor
+### Applicative : Functor `fpy.control.applicative`
 No new trait comparing to functor, `liftA2` is defined using `fmap`
 
-### Monad : Applicative
+### Monad : Applicative `fpy.control.monad`
 Given Monad `m`:
 * `__bind__ :: m a -> (a -> m b) -> m b`
 
+#### Operators:
+* `>>` = `__bind__`
+
 ## Data
-### Maybe : Monad
+### Maybe : Monad `fpy.data.maybe`
 #### Types:
 * `Maybe[T]`
 * `Just[T] : Maybe[T]`
@@ -33,11 +40,95 @@ Given Monad `m`:
 * `maybe :: S -> (T -> S) -> Maybe[T] -> S`
 * `mapMaybe :: (T -> Maybe[S]) -> List[T] -> List[S]`
 
-### Either : Monad
+### Either : Monad `fpy.data.either`
 #### Types:
 * `Either[T]`
 * `Left[T] : Either[T]`
 * `Right[T] : Either[T]`
+
+### Forgetful : Monad (Forgetful Functor) `fpy.data.forgetful`
+#### Types:
+* `Under[T]`
+`Under` is the dummy box for any type, used for the forgetful functor to extract data and drop monadic structures from other monad.
+
+#### Functions:
+Given functor `f`:
+`forget: NTrans[F, B, Under, T] :: f b ~> Under[T]`
+
+
+### Utility Functions `fpy.data.function`
+* `id_ :: T -> T`
+* `const :: T -> A -> T`
+* `flip :: (B -> A -> T) -> A -> B -> T`
+* `fix :: (A -> A) -> A`
+* `on :: (B -> B -> T) -> (A -> B) -> A -> A -> T`
+
+## Composable
+### Composable `fpy.composable.composable`
+* `__compose__`
+#### Operators:
+* `^` = `__compose__`
+
+### Function `fpy.composable.function`
+#### Types:
+* `func : Composable`
+* `SignatureMismatchError`
+* `NotEnoughArgsError`
+
+### Collections `fpy.composable.collections`
+#### Types:
+* `Seq : func`
+* `Map : func`
+
+#### Functions:
+* `transN(n, f, it) := it[n] = f(it[n])`
+* `getN(n, it) := it[n]`
+* `setN(n, v, it) := it[n] = v`
+* `eqN(n, it, x) := it[n] == x`
+* `mapN(n, fn, lsts) := map(fn, zip(lst1, lst2 ... lstn))`
+* `of_(v1 ... vn) := _ in (v1 ... vn)`
+* `is_(t) := isinstance(_, t)`
+* `and_(a, b) := a(_) and b(_)`
+* `or_(a, b) := a(_) or b(_)`
+* `to(dst, src) := dst(src)`
+* `apply(fn) := fn(*a, **k)`
+* `fwd_ = Under.ret`
+
+#### Predefined Vars:
+* `trans0`
+* `trans1`
+* `get0`
+* `get1`
+* `set0`
+* `set1`
+* `eq0`
+* `eq1`
+* `mp1`
+* `mp2`
+
+## Parsec
+### Parsec `fpy.parsec.parsec`
+#### Types:
+* `parser[S, T] :: [S] -> Either [S] ([T] * [S])`
+
+#### Operators:
+* `*` = `parser.timeN`
+* `+` = `parser.concat`
+* `|` = `parser.choice`
+* `>>` = `parser.parseR`
+* `<<` = `parser.parseL`
+
+#### Functions:
+* `one :: (S -> bool) -> parser[S, S]`
+* `neg :: (S -> bool) -> parser[S, S]`
+* `just_nothing :: parser[S, T]`
+* `pmaybe :: parser[S, T] -> parser[S, T]`
+* `many :: parser[S, T] -> parser[S, T]`
+* `many1 :: parser[S, T] -> parser[S, T]`
+* `ptrans :: parser[S, T] -> (T -> Y) -> parser[S, Y]`
+* `peek :: parser[S, T] -> parser[S, T]`
+* `skip :: parser[S, T] -> parser[S, T]`
+* `pseq :: [S] -> parser[S, T]`
 
 ## License
 GPL3+

@@ -112,4 +112,13 @@ def mapN(n, fn, *lsts):
 mp1 = mapN(1)
 mp2 = mapN(2)
 
+
+@func
+def eqN(n, it, x):
+    return x == it[n]
+
+
+eq0 = eqN(0)
+eq1 = eqN(1)
+
 fwd_ = Under.ret

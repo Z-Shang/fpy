@@ -82,3 +82,9 @@ class TestParsec(unittest.TestCase):
         head, rest = fromRight(None, res)
         self.assertEqual(head, [1])
         self.assertIs(toks, rest)
+
+    def testTimeN(self):
+        p1 = one(odd)
+        p2 = one(even)
+        p = p1 | p2
+        self.assertTrue((p * 2)(toks))
