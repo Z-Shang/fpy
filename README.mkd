@@ -142,5 +142,8 @@ Delegate an attribute access to an underlying object
 * `skip :: parser[S, T] -> parser[S, T]`
 * `pseq :: [S] -> parser[S, T]`
 
+## Dependencies
+* [bytecode](https://github.com/MatthieuDartiailh/bytecode)
+
 ## License
 GPL3+
