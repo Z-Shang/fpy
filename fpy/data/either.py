@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from fpy.composable.function import func
 from fpy.control.monad import _Monad
 from fpy.control.natural_transform import NTrans, _NTrans
 from abc import ABCMeta, abstractmethod, abstractclassmethod
@@ -73,6 +74,7 @@ def fromRight(d: R, e: Either[L, R]) -> R:
     return d if not isRight(e) else e.v
 
 
+@func
 def either(fl: Callable[[L], T], fr: Callable[[R], T], e: Either[L, R]) -> T:
     if isLeft(e):
         return fl(fromLeft(None, e))

@@ -1,6 +1,9 @@
 import sys
 
+from fpy.composable.function import func
 
+
+@func
 def trace(txt, val):
     print(txt, val, file=sys.stderr)
     return val

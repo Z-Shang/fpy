@@ -12,6 +12,9 @@ Given Functors `f`, `g`:
 * `|` = `__fmap__`
 * `&` = `__ntrans__`
 
+#### Functions:
+* `fmap` = `__fmap__`
+
 ### NTrans (Natrual Transform) `fpy.control.natural_transform`
 Given Functors `f`, `g`:
 * `__trans__ :: f a ~> g b`

@@ -66,24 +66,24 @@ def is_(ty):
 
 def and_(a, b):
     @func
-    def res(*args, **kwargs):
+    def __and(*args, **kwargs):
         _a = a(*args, **kwargs)
         if _a:
             return b(*args, **kwargs)
         return _a
 
-    return res
+    return __and
 
 
 def or_(a, b):
     @func
-    def res(*args, **kwargs):
+    def __or(*args, **kwargs):
         _a = a(*args, **kwargs)
         if not _a:
             return b(*args, **kwargs)
         return _a
 
-    return res
+    return __or
 
 
 @func
@@ -93,12 +93,12 @@ def to(dst, src):
 
 def apply(fn):
     @func
-    def res(_a=None, _k=None):
+    def __apply(_a=None, _k=None):
         a = _a if _a is not None else ()
         k = _k if _k is not None else {}
         return fn(*a, **k)
 
-    return res
+    return __apply
 
 
 @func

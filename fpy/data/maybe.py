@@ -5,6 +5,7 @@ from fpy.control.natural_transform import _NTrans
 from abc import ABCMeta, abstractmethod, abstractclassmethod
 import collections.abc as cabc
 from typing import TypeVar, Generic, List, Callable
+from dataclasses import dataclass
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -20,9 +21,9 @@ class Maybe(_Monad[T], Generic[T]):
         raise NotImplementedError
 
 
+@dataclass
 class Just(Maybe[T], Generic[T]):
-    def __init__(self, v):
-        self.v = v
+    v: T
 
     def __bool__(self):
         return True

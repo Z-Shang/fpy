@@ -13,6 +13,7 @@ from fpy.composable.collections import (
     and_,
     set0,
     set1,
+    get0,
 )
 
 import string
@@ -55,7 +56,7 @@ class parser(Transparent, Generic[S, T]):
         res = self.fn(s)
         if res is None:
             return Left(s)
-        assert isinstance(res, (tuple, Either))
+        assert isinstance(res, (tuple, Either)), f"{res}"
         return Right(res) if isinstance(res, tuple) else res
 
     def timeN(self, n):
@@ -85,7 +86,7 @@ class parser(Transparent, Generic[S, T]):
         return self.concat(nxt)
 
     def choice(self, other):
-        return parser(or_(self, other))
+        return parser(lambda x: or_(self, other)(x) or None)
 
     def __or__(self, other):
         return self.choice(other)
@@ -129,7 +130,7 @@ pmaybe = __ | just_nothing
 
 def many1(p):
     @parser
-    def res(s):
+    def __many1(s):
         _res = []
         while s:
             _part = p(s)
@@ -141,7 +142,7 @@ def many1(p):
             return None
         return _res, s
 
-    return res
+    return __many1
 
 
 many = lambda p: pmaybe(many1(p))

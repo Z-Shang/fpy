@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, Callable
 
 from fpy.control.natural_transform import _NTrans
+from fpy.composable.function import func
 
 T = TypeVar("T")
 F = TypeVar("F")
@@ -45,3 +46,8 @@ class Functor(_Functor[T], Generic[T]):
 
     def __ntrans__(self, t: Callable[[T], G[B]]) -> G[B]:
         return t(self.val)
+
+
+@func
+def fmap(o: F[A], f: Callable[[A], B]) -> F[B]:
+    return o.__fmap__(f)
