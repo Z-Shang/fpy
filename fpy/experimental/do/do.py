@@ -35,6 +35,12 @@ class Arrow:
 
 
 @dataclass
+class TupleArrow:
+    lineno: int
+    ntpl: int
+
+
+@dataclass
 class Ret:
     lineno: int
 
@@ -45,6 +51,7 @@ dash = and_(isInstr, __.name == "UNARY_NEGATIVE")
 arrowHead = and_(isInstr, and_(__.name == "COMPARE_OP", __.arg == bc.Compare.LT))
 popTop = and_(isInstr, __.name == "POP_TOP")
 none = and_(isInstr, and_(__.name == "LOAD_CONST", __.arg == None))
+mkTpl = and_(isInstr, __.name == "BUILD_TUPLE")
 ret = and_(isInstr, __.name == "RETURN_VALUE")
 load = and_(
     isInstr,
@@ -71,6 +78,10 @@ parseArrow = ptrans(
     one(dash) << one(arrowHead) << one(popTop),
     trans0(trans0(__.lineno ^ Arrow)),
 )
+parseTplArrow = ptrans(
+    one(dash) >> one(arrowHead) >> one(mkTpl) << one(popTop),
+    trans0(trans0(lambda x: TupleArrow(x.lineno, x.arg))),
+)
 parseNoneRet = many(
     ptrans(
         one(popTop) << one(none) << one(ret),
@@ -79,7 +90,7 @@ parseNoneRet = many(
     | one(const(True))
 )
 
-parseDo = many(parseArrow | one(const(True)))
+parseDo = many(parseTplArrow | parseArrow | one(const(True)))
 isFast = and_(isInstr, __.name == "LOAD_FAST")
 fastToCell = ptrans(
     one(isFast),
@@ -150,32 +161,38 @@ def transformDo(insts):
     res = []
     while insts:
         inst = insts.pop()
-        if not isArrow(inst):
+        if not isinstance(inst, (Arrow, TupleArrow)):
             res.insert(0, inst)
             continue
-        i = insts.pop()
-        assert isInstr(i), "labels in do???"
-        if not load(i):
-            insts.append(i)
+        if isinstance(inst, Arrow):
             comp, insts = partitionInst(insts, 1)
-
-        bindName = insts.pop()
-        assert load(bindName) or (
-            isInstr(bindName) and bindName.name == "BUILD_TUPLE"
-        ), "it has to be tuple of symbols on the left of <-"
-        if load(bindName):
-            name = bindName.arg
-            res = [ArrowInst(comp, [name], res)]
-            continue
-        if isInstr(bindName) and bindName.name == "BUILD_TUPLE":
-            narg = bindName.arg
+            bindName = insts.pop()
+            assert load(bindName) or (
+                isInstr(bindName) and bindName.name == "BUILD_TUPLE"
+            ), "it has to be tuple of symbols on the left of <-"
+            if load(bindName):
+                name = bindName.arg
+                res = [ArrowInst(comp, [name], res)]
+                continue
+            if isInstr(bindName) and bindName.name == "BUILD_TUPLE":
+                narg = bindName.arg
+                names = []
+                for _ in range(narg):
+                    name = insts.pop()
+                    assert load(name), "it has to be tuple of symbols on the left of <-"
+                    names.insert(0, name.arg)
+                res = [ArrowInst(comp, names, res)]
+                continue
+        elif isinstance(inst, TupleArrow):
+            comp, insts = partitionInst(insts, 1)
             names = []
-            for _ in range(narg):
+            for _ in range(inst.ntpl):
                 name = insts.pop()
                 assert load(name), "it has to be tuple of symbols on the left of <-"
                 names.insert(0, name.arg)
             res = [ArrowInst(comp, names, res)]
             continue
+
     return res
 
 
