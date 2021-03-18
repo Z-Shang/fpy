@@ -33,6 +33,7 @@ Given Monad `m`:
 #### Do Notation:
 * `@do(Monad)` enables do notation in the decorated function, where the explicit `return` statement will be treated as `ret` from the given `Monad` type, if no `return` statement is given, the last element on the stack will be returned.
 * `name <- computation` binds the computation to the following block, calling the `__bind__` method of the monad object returned from `computation` with the name `name`.
+* `(name1, name2, ..., namen) <- computation` works in the similar way as the single name binding, this applys the binding function to the tuple contained within the monad object instead of calling the function directly.
 
 ## Data
 ### Maybe : Monad `fpy.data.maybe`
