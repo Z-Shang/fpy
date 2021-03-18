@@ -57,6 +57,16 @@ class TestDo(unittest.TestCase):
         self.assertTrue(isJust(res))
         self.assertEqual(fromJust(res), 3)
 
+    def testTupleNoParen(self):
+        @do(Just)
+        def test():
+            a, b < -Just((1, 2))
+            return a + b
+
+        res = test()
+        self.assertTrue(isJust(res))
+        self.assertEqual(fromJust(res), 3)
+
     def testComplex(self):
         @do(Just)
         def test():
