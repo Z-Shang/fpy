@@ -46,6 +46,18 @@ class TestDo(unittest.TestCase):
         self.assertTrue(isJust(res))
         self.assertEqual(fromJust(res), 1)
 
+    def testLocalNested(self):
+        @do(Just)
+        def test():
+            x = 1
+            y < -Just(2)
+            z < -Just(x + y)
+            return z
+
+        res = test()
+        self.assertTrue(isJust(res))
+        self.assertEqual(fromJust(res), 3)
+
     def testNested(self):
         @do(Just)
         def test():
