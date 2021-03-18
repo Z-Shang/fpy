@@ -2,6 +2,22 @@
 
 Just a small collection of my tools
 
+## Goals
+* To bring the ability of composing computations in the functional way
+* Make my life easier
+
+## No Goals
+* Exact clone of Haskell
+* Blazing fast / super efficient
+
+## Python is Already Amazing, Why Bother?
+* Because I can
+* Python may be amazing in some field, but sucks from the functional perspective
+
+## Python Sucks, Why Bother?
+* Because I can
+* Python is still used in my work place
+
 ## Control:
 ### Functor `fpy.control.functor`
 Given Functors `f`, `g`:
