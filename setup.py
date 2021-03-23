@@ -5,7 +5,7 @@ VERSION = "0.0.1"
 DESCRIPTION = "Python module for composing computations"
 CLASSIFIERS = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GPLv3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -23,16 +23,26 @@ def main():
         desc = fin.read().strip()
 
     options = {
-        "name": "fpy",
+        "name": "fppy",
         "version": VERSION,
         "license": "GPLv3",
         "description": DESCRIPTION,
         "long_description": desc,
         "url": "https://github.com/Z-Shang/fpy",
-        "author": "Z.Shang",
+        "author": "zshang",
         "author_email": "z@gilgamesh.me",
         "classifiers": CLASSIFIERS,
-        "packages": ["fpy", "fpy.tests"],
+        "packages": [
+            "fpy",
+            "fpy.composable",
+            "fpy.control",
+            "fpy.data",
+            "fpy.debug",
+            "fpy.experimental",
+            "fpy.parsec",
+            "fpy.utils",
+            "fpy.tests",
+        ],
         "install_requires": ["bytecode"],
     }
     setup(**options)

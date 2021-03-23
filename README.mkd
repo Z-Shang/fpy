@@ -19,6 +19,10 @@ Just a small collection of my tools
 * Because I can
 * Python is still used in my work place
 
+## Install
+With pip:
+> pip install fppy
+
 ## Control:
 ### Functor `fpy.control.functor`
 Given Functors `f`, `g`:
