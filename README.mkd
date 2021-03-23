@@ -1,4 +1,5 @@
 ![FPy](https://github.com/Z-Shang/fpy/blob/c60c60d16127723fcc4e30683de1ba39190f4467/fpy.png)
+![version_badge](https://img.shields.io/pypi/v/fppy.svg)
 # Functional Python
 
 Just a small collection of my tools
