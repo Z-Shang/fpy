@@ -2,7 +2,7 @@
 ![version_badge](https://img.shields.io/pypi/v/fppy.svg)
 # Functional Python
 
-Just a small collection of my tools
+For better computation composing in Python
 
 ## Goals
 * To bring the ability of composing computations in the functional way
