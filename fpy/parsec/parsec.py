@@ -77,25 +77,37 @@ class parser(Transparent, Generic[S, T]):
 
     def concat(self, nxt):
         @parser
-        def res(s):
+        def __concat(s):
             return self(s) >> apply(lambda a, rest: nxt(rest) | trans0(a + __))
 
-        return res
+        return __concat
 
     def __add__(self, nxt):
         return self.concat(nxt)
 
     def choice(self, other):
-        return parser(lambda x: or_(self, other)(x) or None)
+        @parser
+        def __choice(s):
+            return or_(self, other)(s) or None
+
+        return __choice
 
     def __or__(self, other):
         return self.choice(other)
 
-    def parseR(self, other):
-        return parser(lambda s: self(s) >> apply(lambda _, rest: other(rest)))
+    def parseR(self, rightP):
+        @parser
+        def __parseR(s):
+            return self(s) >> apply(lambda leftR, rest: rightP(rest))
 
-    def parseL(self, other):
-        return parser(lambda s: self(s) >> apply(lambda a, rest: other(rest) | set0(a)))
+        return __parseR
+
+    def parseL(self, rightP):
+        @parser
+        def __parseL(s):
+            return self(s) >> apply(lambda leftR, rest: rightP(rest) | set0(leftR))
+
+        return __parseL
 
     def __rshift__(self, other):
         return self.parseR(other)
@@ -154,10 +166,10 @@ def ptrans(p, trans):
 
 def peek(p):
     @parser
-    def res(s):
+    def __peek(s):
         return p(s) | set1(s)
 
-    return res
+    return __peek
 
 
 discard = set0([])
