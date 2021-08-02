@@ -122,3 +122,12 @@ eq0 = eqN(0)
 eq1 = eqN(1)
 
 fwd_ = Under.ret
+
+def seq2map(*keys):
+    @func
+    def __seq2map(*vals):
+        if len(vals) < len(keys):
+            raise NotEnoughArgsError(len(keys), len(vals))
+        return dict(zip(keys, vals))
+
+    return __seq2map

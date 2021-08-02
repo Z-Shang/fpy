@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 DESCRIPTION = "Python module for composing computations"
 CLASSIFIERS = [
@@ -28,6 +28,7 @@ def main():
         "license": "GPLv3",
         "description": DESCRIPTION,
         "long_description": desc,
+        "long_description_content_type": "text/markdown",
         "url": "https://github.com/Z-Shang/fpy",
         "author": "zshang",
         "author_email": "z@gilgamesh.me",
