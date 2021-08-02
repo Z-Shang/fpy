@@ -19,7 +19,7 @@ def main():
     except ImportError:
         from distutils.core import setup
 
-    with open("README.mkd") as fin:
+    with open("README.md") as fin:
         desc = fin.read().strip()
 
     options = {
