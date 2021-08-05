@@ -28,6 +28,16 @@ class Map(func):
     def __getattr__(self, *args, **kwargs):
         return self._m.__getattribute__(*args, **kwargs)
 
+    def split(self, pred):
+        a = {}
+        b = {}
+        for k, v in self._m.items():
+            if pred(k):
+                a[k] = v
+            else:
+                b[k] = v
+        return a, b
+
 
 @func
 def transN(n, fn, it):
