@@ -18,6 +18,9 @@ class Seq(func):
     def __getattr__(self, *args, **kwargs):
         return self._l.__getattribute__(*args, **kwargs)
 
+    def __getitem__(self, *args, **kwargs):
+        return self._l.__getitem__(*args, **kwargs)
+
     def __str__(self):
         return f"#Seq{str(self._l)}"
 
@@ -32,7 +35,7 @@ class Seq(func):
                 a.append(v)
             else:
                 b.append(v)
-        return Seq(a), Seq(b)
+        return a, b
 
     def filter(self, pred):
         return get0(self.split(pred))
@@ -46,6 +49,9 @@ class Map(func):
 
     def __getattr__(self, *args, **kwargs):
         return self._m.__getattribute__(*args, **kwargs)
+
+    def __getitem__(self, *args, **kwargs):
+        return self._m.__getitem__(*args, **kwargs)
 
     def __str__(self):
         return f"#Map{str(self._m)}"
@@ -61,7 +67,7 @@ class Map(func):
                 a[k] = v
             else:
                 b[k] = v
-        return Map(a), Map(b)
+        return a, b
 
     def filter(self, pred):
         return get0(self.split(pred))
