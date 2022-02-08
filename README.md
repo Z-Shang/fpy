@@ -173,6 +173,7 @@ Delegate an attribute access to an underlying object
 * `peek :: parser[S, T] -> parser[S, T]`
 * `skip :: parser[S, T] -> parser[S, T]`
 * `pseq :: [S] -> parser[S, T]`
+* `inv :: parser[S, T] -> parser[S, T]`
 
 ## Dependencies
 * [bytecode](https://github.com/MatthieuDartiailh/bytecode)

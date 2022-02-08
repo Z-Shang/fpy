@@ -14,6 +14,7 @@ from fpy.composable.collections import (
     set0,
     set1,
     get0,
+    get1,
 )
 
 import string
@@ -183,3 +184,12 @@ def pseq(s):
     for e in s:
         p = p + one(__ == e)
     return p
+
+def inv(p):
+    @parser
+    def __inv(s):
+        _r = p(s)
+        if _r:
+            return None
+        return [], s
+    return __inv

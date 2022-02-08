@@ -9,6 +9,7 @@ from fpy.parsec.parsec import (
     peek,
     skip,
     pseq,
+    inv,
 )
 from fpy.data.either import fromRight
 
@@ -88,3 +89,10 @@ class TestParsec(unittest.TestCase):
         p2 = one(even)
         p = p1 | p2
         self.assertTrue((p * 2)(toks))
+
+    def testInv(self):
+        p1 = pseq("abc")
+        p2 = inv(p1)
+        p3 = pseq("cba")
+        self.assertFalse(p2("abc"))
+        self.assertTrue((p2 >> p3)("cba"))
