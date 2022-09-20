@@ -24,5 +24,5 @@ class _Applicative(_Functor[T], Generic[T]):
 class Applicative(_Applicative[T], Generic[T]):
     val: T
 
-    def __fmap__(self, f: Callable[[T], S]) -> Applicative[S]:
-        return Applicative(f(self.val))
+    def __fmap__(self, f: Callable[[T], S]) -> _Applicative[S]:
+        return type(self)(f(self.val))

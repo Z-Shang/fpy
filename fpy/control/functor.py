@@ -42,7 +42,7 @@ class Functor(_Functor[T], Generic[T]):
     val: T
 
     def __fmap__(self, f: Callable[[T], B]) -> _Functor[B]:
-        return Functor(f(self.val))
+        return type(self)(f(self.val))
 
     def __ntrans__(self, t: Callable[[T], G[B]]) -> G[B]:
         return t(self.val)
