@@ -8,6 +8,8 @@ import bytecode as bc
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Callable
 
+import sys
+
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -62,8 +64,14 @@ def cont(f: Callable[[T], R]) -> Cont[T, R]:
             continue
 
         res_bc.append(bc.Instr("LOAD_CONST", to_cont, lineno=inst.lineno))
-        res_bc.append(bc.Instr("ROT_TWO", lineno=inst.lineno))
-        res_bc.append(bc.Instr("CALL_FUNCTION", 1, lineno=inst.lineno))
+        if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+            res_bc.append(bc.Instr("PUSH_NULL", lineno=inst.lineno))
+            res_bc.append(bc.Instr("SWAP", 3, lineno=inst.lineno))
+            res_bc.append(bc.Instr("PRECALL", 1))
+            res_bc.append(bc.Instr("CALL", 1))
+        else:
+            res_bc.append(bc.Instr("ROT_TWO", lineno=inst.lineno))
+            res_bc.append(bc.Instr("CALL_FUNCTION", 1, lineno=inst.lineno))
         res_bc.append(inst)
     print(res_bc)
     bc_obj = bc.Bytecode(res_bc)

@@ -25,6 +25,7 @@ from fpy.debug.debug import trace
 from dataclasses import dataclass
 
 import dis
+import sys
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -119,8 +120,14 @@ def transformRet(insts):
             continue
         if ret(inst):
             res.append(bc.Instr("LOAD_DEREF", bc.CellVar("!ret"), lineno=inst.lineno))
-            res.append(bc.Instr("ROT_TWO", lineno=inst.lineno))
-            res.append(bc.Instr("CALL_FUNCTION", 1, lineno=inst.lineno))
+            if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+                res.append(bc.Instr("PUSH_NULL"))
+                res.append(bc.Instr("SWAP", 3, lineno=inst.lineno))
+                res.append(bc.Instr("PRECALL", 1))
+                res.append(bc.Instr("CALL", 1))
+            else:
+                res.append(bc.Instr("ROT_TWO", lineno=inst.lineno))
+                res.append(bc.Instr("CALL_FUNCTION", 1, lineno=inst.lineno))
             # res.append(bc.Instr("DUP_TOP", lineno=inst.lineno))
             # res.append(bc.Instr("PRINT_EXPR", lineno=inst.lineno))
             res.append(bc.Instr("RETURN_VALUE", lineno=inst.lineno))
@@ -172,6 +179,9 @@ def transformDo(insts):
             ), "it has to be tuple of symbols on the left of <-"
             if load(bindName):
                 name = bindName.arg
+                if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+                    if isinstance(name, tuple):
+                        name = name[1]
                 res = [ArrowInst(comp, [name], res)]
                 continue
             if isInstr(bindName) and bindName.name == "BUILD_TUPLE":
@@ -180,7 +190,10 @@ def transformDo(insts):
                 for _ in range(narg):
                     name = insts.pop()
                     assert load(name), "it has to be tuple of symbols on the left of <-"
-                    names.insert(0, name.arg)
+                    if sys.version_info.major == 3 and sys.version_info.minor >= 11 and isinstance(name.arg, tuple):
+                        names.insert(0, name.arg[1]) 
+                    else:
+                        names.insert(0, name.arg)
                 res = [ArrowInst(comp, names, res)]
                 continue
         elif isinstance(inst, TupleArrow):
@@ -189,7 +202,10 @@ def transformDo(insts):
             for _ in range(inst.ntpl):
                 name = insts.pop()
                 assert load(name), "it has to be tuple of symbols on the left of <-"
-                names.insert(0, name.arg)
+                if sys.version_info.major == 3 and sys.version_info.minor >= 11 and isinstance(name.arg, tuple):
+                    names.insert(0, name.arg[1]) 
+                else:
+                    names.insert(0, name.arg)
             res = [ArrowInst(comp, names, res)]
             continue
 
@@ -215,8 +231,22 @@ def build_do_func(name, arg, body, free):
     return inner
 
 
-markArg = lambda args: (lambda x: Right(x) if load(x) and x.arg in args else Left(x))
+def markArg(args):
+    def res(x):
+        if load(x):
+            if sys.version_info.major == 3 and sys.version_info.minor >= 11 and isinstance(x.arg, tuple):
+                if x.arg[1] in args:
+                    return Right(bc.Instr("LOAD_CONST", x.arg[1]))
+                else:
+                    return Left(x)
+            else:
+                return Right(x) if load(x) and x.arg in args else Left(x)
+        else:
+            return Left(x)
+    return res
+
 toArg = __.arg ^ bc.CellVar ^ func(bc.Instr, "LOAD_DEREF")
+# toArg = __.arg ^ func(bc.Instr, "LOAD_FAST")
 isCell = and_(
     isInstr,
     and_(
@@ -239,8 +269,14 @@ toFree = lambda x: bc.Instr(x.name, bc.FreeVar(x.arg.name))
 def doArrow(name, cells, free, arrow):
     if not isinstance(arrow, ArrowInst):
         return [arrow]
+    # print(f"doing arrow: {arrow}")
     bind_fn_name = f"{name}.__do_bind_{'_'.join(arrow.argnames)}__"
+    # print(f"{bind_fn_name = }")
     arrfn = build_do_func(bind_fn_name, arrow.argnames, arrow.nxt, [*cells, *free])
+    # print("=" * 20)
+    # dis.dis(arrfn)
+    # dis.show_code(arrfn)
+    # print("=" * 20)
     # print(f"{bind_fn_name = }")
     rawcomp = arrow.comp
     # print(f"{rawcomp = }")
@@ -254,9 +290,9 @@ def doArrow(name, cells, free, arrow):
     # print(f"{transcomp = }")
     res = [
         *transcomp,
-        # bc.Instr("DUP_TOP", lineno=arrow.comp[-1].lineno),
-        # bc.Instr("PRINT_EXPR", lineno=arrow.comp[-1].lineno),
-        bc.Instr("LOAD_ATTR", "__bind__", lineno=arrow.comp[-1].lineno),
+        * ([bc.Instr("LOAD_METHOD", "__bind__", lineno=arrow.comp[-1].lineno)]
+           if sys.version_info.major == 3 and sys.version_info.minor >= 11 else
+           [bc.Instr("LOAD_ATTR", "__bind__", lineno=arrow.comp[-1].lineno)])
     ]
     ncells = len(cells)
     for cell in cells:
@@ -268,19 +304,30 @@ def doArrow(name, cells, free, arrow):
     if cells:
         res.append(bc.Instr("BUILD_TUPLE", ncells))
     res.append(bc.Instr("LOAD_CONST", arrfn))
-    res.append(
-        bc.Instr(
-            "LOAD_CONST",
-            bind_fn_name,
-            lineno=arrow.comp[-1].lineno,
+    if not (sys.version_info.major == 3 and sys.version_info.minor >= 11):
+        res.append(
+            bc.Instr(
+                "LOAD_CONST",
+                bind_fn_name,
+                lineno=arrow.comp[-1].lineno,
+            )
         )
-    )
     res.append(bc.Instr("MAKE_FUNCTION", 0x08, lineno=arrow.comp[-1].lineno))
     if len(arrow.argnames) > 1:
         res.append(bc.Instr("LOAD_CONST", apply))
-        res.append(bc.Instr("ROT_TWO"))
-        res.append(bc.Instr("CALL_FUNCTION", 1))
-    res.append(bc.Instr("CALL_FUNCTION", 1, lineno=arrow.comp[-1].lineno))
+        if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+            res.append(bc.Instr("PUSH_NULL"))
+            res.append(bc.Instr("SWAP", 3))
+            res.append(bc.Instr("PRECALL", 1))
+            res.append(bc.Instr("CALL", 1))
+        else:
+            res.append(bc.Instr("ROT_TWO"))
+            res.append(bc.Instr("CALL_FUNCTION", 1))
+    if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+        res.append(bc.Instr("PRECALL", 1))
+        res.append(bc.Instr("CALL", 1))
+    else:
+        res.append(bc.Instr("CALL_FUNCTION", 1, lineno=arrow.comp[-1].lineno))
     res.append(bc.Instr("RETURN_VALUE", lineno=arrow.comp[-1].lineno))
     return res
 
@@ -304,14 +351,22 @@ def doDeco(b, name, args, free):
     # print(f"{cells = }")
     res = (
         res
+        # | trace("res = ")
         | mp1(doArrow(name, cells.under(), free))
+        # | trace("didArrow = ")
         | func(sum, start=[]) ^ bc.Bytecode
     )
+    # print(f"{res.under() = }")
     resbc = res.under()
     # pp.pprint(resbc)
     resbc.cellvars.extend(cells.under())
     resbc.cellvars.extend(free)
+    if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+        for cell in resbc.cellvars:
+            resbc.insert(0, bc.Instr("MAKE_CELL", bc.CellVar(cell)))
     resbc.freevars.extend(free)
+    if len(resbc.freevars) > 0:
+        resbc.insert(0, bc.Instr("COPY_FREE_VARS", len(resbc.freevars)))
     resbc.argcount = len(args)
     resbc.argnames.extend(args)
     resbc.name = name
@@ -337,6 +392,7 @@ def do(m):
             bc.Instr("STORE_DEREF", bc.CellVar("!ret")),
         ]
         rawbc = bc.Bytecode.from_code(fn.__code__)
+        # print(f"{rawbc = }")
         args = fn.__code__.co_varnames[: fn.__code__.co_argcount]
         b = parseNoneRet(retbc + rawbc) & forget | get0 | transformRet
         co = doDeco(b.under(), fn.__name__, args, rawbc.freevars)
