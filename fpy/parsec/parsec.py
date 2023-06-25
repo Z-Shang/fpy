@@ -57,7 +57,7 @@ class parser(Transparent, Generic[S, T]):
         res = self.fn(s)
         if res is None:
             return Left(s)
-        assert isinstance(res, (tuple, Either)), f"{res}"
+        assert isinstance(res, (tuple, Either)), f"{res} type is {type(res)}"
         return Right(res) if isinstance(res, tuple) else res
 
     def timeN(self, n):

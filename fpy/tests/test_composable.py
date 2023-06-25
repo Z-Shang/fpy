@@ -5,6 +5,7 @@ from fpy.composable.collections import (
     transN,
     setN,
     getN,
+    get0,
     of_,
     is_,
     and_,
@@ -15,6 +16,7 @@ from fpy.composable.collections import (
     fwd_,
 )
 from fpy.data.forgetful import Under
+from fpy.utils.placeholder import __
 
 import unittest
 
@@ -107,3 +109,16 @@ class TestCompsable(unittest.TestCase):
         self.assertListEqual([2, 3, 4], f1([1, 2, 3]))
         f2 = mapN(1)(add1)
         self.assertListEqual([2, 3, 4], f2([1, 2, 3]))
+
+    def testPlaceholder(self):
+        class T:
+            def __init__(self, a):
+                self.a = a
+
+        a = T(1)
+        f = __.a == 1
+        self.assertTrue(f(a))
+
+        b = T([1,2,3])
+        g = __.a ^ get0 == 1
+        self.assertTrue(g(b))

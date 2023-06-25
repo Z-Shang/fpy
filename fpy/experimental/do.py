@@ -344,6 +344,16 @@ def doArrow(name, cells, free, arrow):
     res.append(bc.Instr("RETURN_VALUE", lineno=arrow.comp[-1].lineno))
     return res
 
+def makeCells(insts):
+    cells = set()
+    for inst in insts:
+        if not isInstr(inst):
+            continue
+        if inst.name != 'MAKE_CELL':
+            continue
+        if inst.arg.name not in cells:
+            cells.add(inst.arg.name)
+    return cells
 
 def doDeco(b, name, args, free):
     # print(f"{free = }")
@@ -372,12 +382,16 @@ def doDeco(b, name, args, free):
     )
     # print(f"{res.under() = }")
     resbc = res.under()
+
+    madeCells = makeCells(resbc)
+
     # pp.pprint(resbc)
     resbc.cellvars.extend(cells.under())
     resbc.cellvars.extend(free)
     if sys.version_info.major == 3 and sys.version_info.minor >= 11:
         for cell in resbc.cellvars:
-            resbc.insert(0, bc.Instr("MAKE_CELL", bc.CellVar(cell)))
+            if cell not in madeCells:
+                resbc.insert(0, bc.Instr("MAKE_CELL", bc.CellVar(cell)))
     resbc.freevars.extend(free)
     if len(resbc.freevars) > 0:
         resbc.insert(0, bc.Instr("COPY_FREE_VARS", len(resbc.freevars)))

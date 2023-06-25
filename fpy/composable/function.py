@@ -6,6 +6,8 @@ from fpy.composable.transparent import Transparent
 
 from typing import Callable
 
+import sys
+import traceback
 
 class SignatureMismatchError(Exception):
     def __init__(self, e):
@@ -47,7 +49,11 @@ class func(Composable, Transparent):
         try:
             self.sig.bind(*_args, **_kwargs)
             return self.fn(*_args, **_kwargs)
-        except TypeError:
+        except TypeError as e:
+            # print(f"TypeError: {e}", file=sys.stderr)
+            # tb = sys.exc_info()[2]
+            # print(f"{tb.tb_frame.f_code.co_filename = }, {tb.tb_lineno = }")
+            # traceback.print_tb(tb)
             try:
                 self.sig.bind_partial(*_args, **_kwargs)
                 return func(self, *args, **kwargs)
@@ -58,8 +64,8 @@ class func(Composable, Transparent):
 
     def __compose__(self, other):
         if isinstance(other, func):
-            return func(lambda *args, **kwargs: other(self(*args, **kwargs)))
+            return self.__class__(lambda *args, **kwargs: other(self(*args, **kwargs)))
         if isinstance(other, cabc.Callable):
             fn = func(other)
-            return func(lambda *args, **kwargs: fn(self(*args, **kwargs)))
+            return self.__class__(lambda *args, **kwargs: fn(self(*args, **kwargs)))
         raise TypeError(f"Cannot compose function with {type(other)}")
