@@ -29,6 +29,10 @@ import sys
 
 pp = pprint.PrettyPrinter(indent=4)
 
+@dataclass
+class Then:
+    lineno: int
+
 
 @dataclass
 class Arrow:
@@ -83,6 +87,10 @@ parseTplArrow = ptrans(
     one(dash) >> one(arrowHead) >> one(mkTpl) << one(popTop),
     trans0(trans0(lambda x: TupleArrow(x.lineno, x.arg))),
 )
+parseThen = ptrans(
+        one(popTop),
+        trans0(trans0(__.lineno ^ Then)),
+)
 parseNoneRet = many(
     ptrans(
         one(popTop) << one(none) << one(ret),
@@ -91,7 +99,7 @@ parseNoneRet = many(
     | one(const(True))
 )
 
-parseDo = many(parseTplArrow | parseArrow | one(const(True)))
+parseDo = many(parseTplArrow | parseArrow | parseThen | one(const(True)))
 isFast = and_(isInstr, __.name == "LOAD_FAST")
 fastToCell = ptrans(
     one(isFast),
@@ -168,8 +176,13 @@ def transformDo(insts):
     res = []
     while insts:
         inst = insts.pop()
-        if not isinstance(inst, (Arrow, TupleArrow)):
+        if not isinstance(inst, (Then, Arrow, TupleArrow)):
             res.insert(0, inst)
+            continue
+        if isinstance(inst, Then):
+            # a >> b := a >>= \_ -> b
+            comp, insts = partitionInst(insts, 1)
+            res = [ArrowInst(comp, [f"!_{inst.lineno}"], res)]
             continue
         if isinstance(inst, Arrow):
             comp, insts = partitionInst(insts, 1)
@@ -343,6 +356,7 @@ def doDeco(b, name, args, free):
         ^ mp1(markArg(args))
         ^ mp1(either(id_, toArg))
         ^ mp1(transFree(free))
+        # ^ trace("before trans do = ")
         ^ transformDo
     )
     # print("Trans BC: ", res.under())

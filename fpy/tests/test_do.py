@@ -93,9 +93,9 @@ class TestDo(unittest.TestCase):
     def testComplex(self):
         @do(Just)
         def test():
-            (a, b) < -Just((1, 2))
-            c < -Just(a + b)
-            d < -Just(c * b)
+            a, b <- Just((1, 2))
+            c <- Just(a + b)
+            d <- Just(c * b)
             return d
 
         res = test()
