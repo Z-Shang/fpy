@@ -99,6 +99,8 @@ def getN(n, x):
 get0 = getN(0)
 get1 = getN(1)
 
+def not_(pred):
+    return func(lambda x: not pred(x))
 
 def of_(*it):
     return func(lambda x: x in it)
