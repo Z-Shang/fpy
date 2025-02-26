@@ -103,6 +103,22 @@ Given functor `f`:
 * `fix :: (A -> A) -> A`
 * `on :: (B -> B -> T) -> (A -> B) -> A -> A -> T`
 
+#### Slightly Dependent Utilities
+```
+-- not so well typed
+
+NArg :: Nat -> Type
+NArg (S Z) = A
+NArg (S n) = A -> (NArg n)
+
+NTpl :: (n:Nat) -> (NArg n) -> Type
+NTpl (S Z) A =( A,)
+NTpl (S n) (A -> NArg n) = cons A (NTpl n (NArg n))
+```
+
+* `constN :: (n:Nat) -> A -> (NArg n) -> A`
+* `uncurryN :: (n:Nat) -> args:(NArg n) -> A -> ((NTpl n args) -> A)`
+
 ## Composable
 ### Composable `fpy.composable.composable`
 * `__compose__`
