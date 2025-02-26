@@ -1,6 +1,6 @@
 from fpy.composable.function import func
 
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Any
 
 T = TypeVar("T")
 F = TypeVar("F")
@@ -13,7 +13,7 @@ def id_(x: T) -> T:
 
 
 @func
-def const(x: T, _: any) -> T:
+def const(x: T, _: Any) -> T:
     return x
 
 
@@ -30,3 +30,20 @@ def fix(f: Callable) -> Callable:
 @func
 def on(b: Callable[[B, B], T], u: Callable[[A], B], x: A, y: A) -> T:
     return b(u(x), u(y))
+
+@func
+def constN(n: int, x):
+    if n == 1:
+        return const(x)
+    return const(constN(n - 1, x))
+
+def uncurryN(n: int, f):
+    def _res(*args):
+        if len(args) != n:
+            raise TypeError(f"Uncurried function {f} expected {n} arguments but {len(args)} was given")
+        part = f
+        for i in range(n):
+            part = part(args[i])
+        return part
+
+    return _res

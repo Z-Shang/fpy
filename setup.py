@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-VERSION = "0.0.11"
+VERSION = "0.0.12"
 
 DESCRIPTION = "Python module for composing computations"
 CLASSIFIERS = [
