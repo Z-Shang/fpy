@@ -1,4 +1,4 @@
-from fpy.data.either import Either, Left, Right
+from fpy.data.either import Either, Left, Right, isRight, fromRight
 from fpy.data.forgetful import forget
 from fpy.data.function import const, flip
 from fpy.utils.placeholder import __
@@ -18,7 +18,7 @@ from fpy.composable.collections import (
 )
 
 import string
-from typing import TypeVar, List, Tuple, Callable, Generic, Iterable
+from typing import TypeVar, List, Tuple, Callable, Generic
 from dataclasses import dataclass
 import collections.abc as cabc
 
@@ -44,12 +44,12 @@ class parser(Transparent, Generic[S, T]):
     parser :: [S] -> Either [S] ([T] * [S])
     """
 
-    fn: Callable[[Iterable[S]], Either[Iterable[S], Tuple[T, Iterable[S]]]]
+    fn: Callable[[List[S]], Either[List[S], Tuple[T, List[S]]]] | Callable[[List[S]], None | Tuple[T, List[S]]]
 
     def __underlying__(self):
         return self.fn
 
-    def __call__(self, s: List[S]):
+    def __call__(self, s: List[S]) -> Either[List[S], Tuple[T, List[S]]]:
         if not isinstance(s, cabc.Sequence):
             raise TypeError("Cannot parse none sequence")
         if not s:
@@ -137,23 +137,27 @@ def neg(pred):
     return res
 
 
-just_nothing = parser(lambda s: ([], s))
-pmaybe = __ | just_nothing
+@parser
+def just_nothing(s: List[S]) -> Either[List[S], Tuple[List[T], List[S]]]:
+    return Right(([], s))
+
+def pmaybe(p: parser[S, T]):
+    return p | just_nothing
 
 
-def many1(p):
+def many1(p: parser[S, T]) -> parser[S, List[T]]:
     @parser
-    def __many1(s):
+    def __many1(s: List[S]) -> Either[List[S], Tuple[List[T], List[S]]]:
         _res = []
         while s:
             _part = p(s)
-            if not _part:
+            if not isRight(_part):
                 break
             part, s = (_part & forget).under()
             _res += part
         if not _res:
-            return None
-        return _res, s
+            return Left(s)
+        return Right((_res, s))
 
     return __many1
 
