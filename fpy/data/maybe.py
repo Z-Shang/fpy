@@ -37,6 +37,9 @@ class Just(Maybe[T], Generic[T]):
     def __bind__(self, b: Callable[[T], Maybe[S]]) -> Maybe[S]:
         return b(self.v)
 
+    def __enter__(self):
+        return self.v
+
 
 class Nothing(Maybe[T], Generic[T]):
     def __bool__(self):
@@ -47,7 +50,6 @@ class Nothing(Maybe[T], Generic[T]):
 
     def __ntrans__(self, t: _NTrans[Maybe, T, G, S]) -> G[S]:
         return t(None)
-
 
 def isJust(m: Maybe[T]) -> bool:
     return isinstance(m, Just)

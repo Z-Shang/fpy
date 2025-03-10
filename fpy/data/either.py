@@ -57,6 +57,9 @@ class Right(Either[L, R]):
     def __ntrans__(self, t: _NTrans[Either, [L, R], G, T]) -> G[T]:
         return t(self.v)
 
+    def __enter__(self):
+        return self.v
+
 
 def isLeft(e: Either[L, R]) -> bool:
     return isinstance(e, Left)
