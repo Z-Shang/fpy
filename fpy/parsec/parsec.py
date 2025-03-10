@@ -18,7 +18,7 @@ from fpy.composable.collections import (
 )
 
 import string
-from typing import TypeVar, List, Tuple, Callable, Generic
+from typing import TypeVar, List, Tuple, Callable, Generic, Iterable
 from dataclasses import dataclass
 import collections.abc as cabc
 
@@ -44,7 +44,7 @@ class parser(Transparent, Generic[S, T]):
     parser :: [S] -> Either [S] ([T] * [S])
     """
 
-    fn: Callable[[List[S]], Either[List[S], Tuple[List[T], List[S]]]]
+    fn: Callable[[Iterable[S]], Either[Iterable[S], Tuple[T, Iterable[S]]]]
 
     def __underlying__(self):
         return self.fn
