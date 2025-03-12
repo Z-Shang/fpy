@@ -3,15 +3,14 @@
 
 from fpy.composable.function import func
 
-from typing import TypeVar, ParamSpec, Any, Generic, Callable
+from typing import TypeVar, Any, Generic, Callable
 
 T = TypeVar("T")
-P = ParamSpec("P")
 R = TypeVar("R")
 
 
-class IntermediateFunc(func[P, R], Generic[P, R]):
-    def __init__(self, fn: Callable[P, R]):
+class IntermediateFunc(Generic[R], func[R]):
+    def __init__(self, fn: Callable[[Any], R]):
         super().__init__(fn)
 
     def __eq__(self, a: Any) -> Callable[[Any], bool]:

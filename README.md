@@ -1,6 +1,6 @@
 ![FPy](https://github.com/Z-Shang/fpy/blob/c60c60d16127723fcc4e30683de1ba39190f4467/fpy.png)
 
-[![version_badge](https://img.shields.io/pypi/v/fppy.svg)](https://pypi.org/project/fppy/0.0.18.post1/)
+[![version_badge](https://img.shields.io/pypi/v/fppy.svg)](https://pypi.org/project/fppy/0.0.18.post2/)
 # Functional Python
 
 For better computation composing in Python
