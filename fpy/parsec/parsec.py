@@ -156,13 +156,13 @@ def many1(p: parser[S, Sequence[T]]):
         _res = []
         work_s = s
         while work_s:
-            _part: Either[Any, Tuple[Sequence[T], Sequence[S]]] = p(s)
+            _part: Either[Any, Tuple[Sequence[T], Sequence[S]]] = p(work_s)
             if not isRight(_part):
-                return _part
+                break
             part, work_s = fromRight(([], []), _part)
             _res += part
         if not _res:
-            return Left("no res")
+            return Left("no res from many1")
         return Right((_res, work_s))
 
     return __many1
