@@ -18,7 +18,7 @@ from fpy.composable.collections import (
 )
 
 import string
-from typing import TypeVar, List, Tuple, Callable, Generic
+from typing import TypeVar, List, Tuple, Callable, Generic, Sequence, Union, Optional, Any
 from dataclasses import dataclass
 import collections.abc as cabc
 
@@ -44,12 +44,12 @@ class parser(Transparent, Generic[S, T]):
     parser :: [S] -> Either [S] ([T] * [S])
     """
 
-    fn: Callable[[List[S]], Either[List[S], Tuple[T, List[S]]]] | Callable[[List[S]], None | Tuple[T, List[S]]]
+    fn: Union[Callable[[Sequence[S]], Either[Any, Tuple[T, Sequence[S]]]], Callable[[Sequence[S]], Optional[Tuple[T, Sequence[S]]]]] 
 
     def __underlying__(self):
         return self.fn
 
-    def __call__(self, s: List[S]) -> Either[List[S], Tuple[T, List[S]]]:
+    def __call__(self, s: Sequence[S]):
         if not isinstance(s, cabc.Sequence):
             raise TypeError("Cannot parse none sequence")
         if not s:
@@ -117,52 +117,58 @@ class parser(Transparent, Generic[S, T]):
         return self.parseL(other)
 
 
-def one(pred):
+def one(pred: Callable[[S], bool]) -> parser[S, S]:
     @parser
-    def res(s):
+    def res(s: Sequence[S]):
         if pred(s[0]):
-            return [s[0]], s[1:]
+            return s[0], s[1:]
         return None
 
     return res
 
 
-def neg(pred):
+def neg(pred: Callable[[S], bool]) -> parser[S, S]:
     @parser
-    def res(s):
+    def res(s: Sequence[S]):
         if not pred(s[0]):
-            return [s[0]], s[1:]
+            return s[0], s[1:]
         return None
 
     return res
 
 
-@parser
-def just_nothing(s: List[S]) -> Either[List[S], Tuple[List[T], List[S]]]:
-    return Right(([], s))
-
-def pmaybe(p: parser[S, T]):
-    return p | just_nothing
-
-
-def many1(p: parser[S, T]) -> parser[S, List[T]]:
+def just_nothing(unit : T) -> parser[S, T]:
     @parser
-    def __many1(s: List[S]) -> Either[List[S], Tuple[List[T], List[S]]]:
+    def __res(s: Sequence[S]):
+        return (unit, s)
+    return __res
+
+def pmaybe(p: parser[S, T], unit: T):
+    return p | just_nothing(unit)
+
+
+def many1(p: parser[S, Sequence[T]]):
+    """
+    many1 must take a parser that results in a sequence of tokens
+    """
+    @parser
+    def __many1(s: Sequence[S]) -> Either[Any, Tuple[Sequence[T], Sequence[S]]]:
         _res = []
-        while s:
-            _part = p(s)
+        work_s = s
+        while work_s:
+            _part: Either[Any, Tuple[Sequence[T], Sequence[S]]] = p(s)
             if not isRight(_part):
-                break
-            part, s = (_part & forget).under()
+                return _part
+            part, work_s = fromRight(([], []), _part)
             _res += part
         if not _res:
-            return Left(s)
-        return Right((_res, s))
+            return Left("no res")
+        return Right((_res, work_s))
 
     return __many1
 
 
-many = lambda p: pmaybe(many1(p))
+many = lambda p: pmaybe(many1(p), [])
 
 
 def ptrans(p, trans):
@@ -181,12 +187,15 @@ discard = set0([])
 skip = flip(ptrans, discard)
 
 
-def pseq(s):
+def toSeq(p: parser[S, T]) -> parser[S, Sequence[T]]:
+    return ptrans(p, trans0(lambda x: [x]))
+
+def pseq(s: Sequence[S]) -> parser[S, Sequence[S]]:
     if not s:
-        return just_nothing
-    p = just_nothing
+        return just_nothing([])
+    p = just_nothing([])
     for e in s:
-        p = p + one(__ == e)
+        p = p + toSeq(one(__ == e))
     return p
 
 def inv(p):

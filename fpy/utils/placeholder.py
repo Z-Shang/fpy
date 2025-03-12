@@ -3,39 +3,45 @@
 
 from fpy.composable.function import func
 
+from typing import TypeVar, ParamSpec, Any, Generic, Callable
 
-class IntermediateFunc(func):
-    def __init__(self, fn):
+T = TypeVar("T")
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+class IntermediateFunc(func[P, R], Generic[P, R]):
+    def __init__(self, fn: Callable[P, R]):
         super().__init__(fn)
 
-    def __eq__(self, a):
+    def __eq__(self, a: Any) -> Callable[[Any], bool]:
         return lambda x: self(x) == a
 
-    def __ne__(self, a):
+    def __ne__(self, a: Any) -> Callable[[Any], bool]:
         return lambda x: self(x) != a
 
-    def __add__(self, n):
+    def __add__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: self(x) + n
 
-    def __sub__(self, n):
+    def __sub__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: self(x) - n
 
-    def __mul__(self, n):
+    def __mul__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: self(x) * n
 
-    def __div__(self, n):
+    def __div__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: self(x) / n
 
-    def __radd__(self, n):
+    def __radd__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: n + self(x)
 
-    def __rsub__(self, n):
+    def __rsub__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: n - self(x)
 
-    def __rmul__(self, n):
+    def __rmul__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: n * self(x)
 
-    def __rdiv__(self, n):
+    def __rdiv__(self, n: Any) -> Callable[[Any], Any]:
         return lambda x: n / self(x)
 
     def __getattr__(self, *args, **kwargs):
@@ -52,11 +58,17 @@ class IntermediateFunc(func):
 
 
 class Placeholder:
-    def __eq__(self, a):
-        return IntermediateFunc(lambda x: x == a)
+    def __eq__(self, a: Any) -> Callable[[Any], bool]:
+        def __f(x: Any) -> bool:
+            return x == a
 
-    def __ne__(self, a):
-        return IntermediateFunc(lambda x: x != a)
+        return IntermediateFunc(__f)
+
+    def __ne__(self, a: Any) -> Callable[[Any], bool]:
+        def __f(x: Any) -> bool:
+            return x != a
+
+        return IntermediateFunc(__f)
 
     def __add__(self, n):
         return IntermediateFunc(lambda x: x + n)

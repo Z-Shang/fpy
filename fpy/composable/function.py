@@ -4,7 +4,7 @@ import collections.abc as cabc
 from fpy.composable.composable import Composable
 from fpy.composable.transparent import Transparent
 
-from typing import Callable
+from typing import Callable, TypeVar, ParamSpec, Generic, Union, Concatenate
 
 import sys
 import traceback
@@ -19,9 +19,13 @@ class NotEnoughArgsError(Exception):
         self.expect = expect
         self.got = got
 
+P = ParamSpec("P")
+O = ParamSpec("O")
+I = ParamSpec("I")
+R = TypeVar("R")
 
-class func(Composable, Transparent):
-    fn: Callable = None
+class func(Composable, Transparent, Generic[P, R], Callable[P, R]):
+    fn: Callable[P, R] = None
 
     def __init__(self, f, *args, **kwargs):
         if isinstance(f, func):
@@ -43,7 +47,7 @@ class func(Composable, Transparent):
     def __repr__(self):
         return repr(self.fn)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: O.args, **kwargs: O.kwargs) -> Union[R, func[I, R]]:
         _args = (*self.args, *args)
         _kwargs = {**self.kwargs, **kwargs}
         try:
@@ -56,7 +60,7 @@ class func(Composable, Transparent):
             # traceback.print_tb(tb)
             try:
                 self.sig.bind_partial(*_args, **_kwargs)
-                return func(self, *args, **kwargs)
+                return func[I, R](self, *args, **kwargs)
             except TypeError as e:
                 raise SignatureMismatchError(e)
         except NotEnoughArgsError:
