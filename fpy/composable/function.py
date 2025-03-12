@@ -59,7 +59,7 @@ class func(Composable, Transparent, Generic[R], Callable[[Any], R]):
             # traceback.print_tb(tb)
             try:
                 self.sig.bind_partial(*_args, **_kwargs)
-                return func[I, R](self, *args, **kwargs)
+                return func(self, *args, **kwargs)
             except TypeError as e:
                 raise SignatureMismatchError(e)
         except NotEnoughArgsError:

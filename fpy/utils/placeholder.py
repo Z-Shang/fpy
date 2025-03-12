@@ -9,7 +9,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 
-class IntermediateFunc(Generic[R], func[R]):
+class IntermediateFunc(func[R], Generic[R]):
     def __init__(self, fn: Callable[[Any], R]):
         super().__init__(fn)
 
