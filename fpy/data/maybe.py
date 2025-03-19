@@ -59,8 +59,8 @@ def isNothing(m: Maybe[T]) -> bool:
     return isinstance(m, Nothing)
 
 
-def fromJust(m: Just[T]) -> T:
-    assert isJust(m)
+def fromJust(m: Maybe[T]) -> T:
+    assert isinstance(m, Just)
     return m.v
 
 
